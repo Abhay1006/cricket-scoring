@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import "../app/admin/admin.css";    
 
 const AdminPanel = () => {
   const batsmanOptions = [
@@ -124,109 +123,178 @@ const AdminPanel = () => {
   };
 
   return (
-    <div className="admin-panel">
-      <div className="dropdowns">
-        <div>
-          <label>Striker: </label>
-          <select value={striker} onChange={(e) => setStriker(e.target.value)}>
-            {batsmanOptions
-              .filter((player) => !dismissedBatsmen.includes(player))
-              .map((player) => (
-                <option key={player} value={player}>
-                  {player}
-                </option>
-              ))}
-          </select>
+    <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 350px", gap: "2rem", alignItems: "start" }}>
+      
+      <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
+        
+        {/* Controls Panel */}
+        <div className="glass-panel" style={{ padding: "2rem" }}>
+          <h2 style={{ marginBottom: "1.5rem", fontSize: "1.25rem" }}>Match Controls</h2>
+          
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1.5rem", marginBottom: "2rem" }}>
+            <div>
+              <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontSize: "0.9rem" }}>Striker</label>
+              <select value={striker} onChange={(e) => setStriker(e.target.value)}>
+                {batsmanOptions
+                  .filter((player) => !dismissedBatsmen.includes(player))
+                  .map((player) => (
+                    <option key={player} value={player}>
+                      {player}
+                    </option>
+                  ))}
+              </select>
+            </div>
+            <div>
+              <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontSize: "0.9rem" }}>Non-Striker</label>
+              <select value={nonStriker} onChange={(e) => setNonStriker(e.target.value)}>
+                {batsmanOptions
+                  .filter((player) => !dismissedBatsmen.includes(player))
+                  .map((player) => (
+                    <option key={player} value={player}>
+                      {player}
+                    </option>
+                  ))}
+              </select>
+            </div>
+            <div>
+              <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontSize: "0.9rem" }}>Bowler</label>
+              <select value={bowler} onChange={(e) => setBowler(e.target.value)}>
+                {bowlerOptions.map((player) => (
+                  <option key={player} value={player}>
+                    {player}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: "1rem" }}>
+            <button className="btn-primary" onClick={() => handleRun(1)}>1 Run</button>
+            <button className="btn-primary" onClick={() => handleRun(2)}>2 Runs</button>
+            <button className="btn-primary" onClick={() => handleRun(4)}>4 Runs</button>
+            <button className="btn-primary" onClick={() => handleRun(6)}>6 Runs</button>
+            <button className="btn-secondary" onClick={handleWicket} style={{ borderColor: "#ef4444", color: "#ef4444" }}>Wicket</button>
+            <button className="btn-secondary" onClick={() => handleExtra("wide")}>Wide</button>
+            <button className="btn-secondary" onClick={() => handleExtra("noBall")}>No Ball</button>
+            <button className="btn-secondary" onClick={() => handleExtra("bye")}>Bye</button>
+            <button className="btn-secondary" onClick={() => handleExtra("legBye")}>Leg Bye</button>
+          </div>
         </div>
 
-        <div>
-          <label>Non-Striker: </label>
-          <select value={nonStriker} onChange={(e) => setNonStriker(e.target.value)}>
-            {batsmanOptions
-              .filter((player) => !dismissedBatsmen.includes(player))
-              .map((player) => (
-                <option key={player} value={player}>
-                  {player}
-                </option>
-              ))}
-          </select>
-        </div>
+        {/* Scorecards */}
+        <div className="glass-panel" style={{ padding: "2rem" }}>
+          <h3 style={{ marginBottom: "1rem", color: "var(--accent-blue)" }}>Batting Scorecard</h3>
+          <div style={{ overflowX: "auto" }}>
+            <table>
+              <thead>
+                <tr>
+                  <th>Batsman</th>
+                  <th>Runs</th>
+                  <th>Balls</th>
+                </tr>
+              </thead>
+              <tbody>
+                {batsmanOptions.map((player) => {
+                  const isOut = dismissedBatsmen.includes(player);
+                  const isBatting = player === striker || player === nonStriker;
+                  const hasBatted = batsmanStats[player]?.balls > 0 || isBatting || isOut;
+                  if (!hasBatted) return null;
+                  
+                  return (
+                    <tr key={player} style={{ opacity: isOut ? 0.5 : 1 }}>
+                      <td style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                        {player}
+                        {player === striker && <span style={{ color: "var(--accent-blue)", fontSize: "0.8rem" }}>* (Striker)</span>}
+                        {player === nonStriker && <span style={{ color: "var(--accent-purple)", fontSize: "0.8rem" }}>*</span>}
+                        {isOut && <span style={{ color: "#ef4444", fontSize: "0.8rem" }}>(Out)</span>}
+                      </td>
+                      <td><b>{batsmanStats[player]?.runs}</b></td>
+                      <td>{batsmanStats[player]?.balls}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
 
-        <div>
-          <label>Bowler: </label>
-          <select value={bowler} onChange={(e) => setBowler(e.target.value)}>
-            {bowlerOptions.map((player) => (
-              <option key={player} value={player}>
-                {player}
-              </option>
-            ))}
-          </select>
+          <h3 style={{ marginTop: "3rem", marginBottom: "1rem", color: "var(--accent-purple)" }}>Bowling Stats</h3>
+          <div style={{ overflowX: "auto" }}>
+            <table>
+              <thead>
+                <tr>
+                  <th>Bowler</th>
+                  <th>Wickets</th>
+                  <th>Runs</th>
+                </tr>
+              </thead>
+              <tbody>
+                {bowlerOptions.map((player) => {
+                  const hasBowled = bowlerStats[player]?.runs > 0 || bowlerStats[player]?.wickets > 0 || player === bowler;
+                  if (!hasBowled) return null;
+
+                  return (
+                    <tr key={player}>
+                      <td style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                        {player}
+                        {player === bowler && <span style={{ color: "var(--accent-blue)", fontSize: "0.8rem" }}>* (Current)</span>}
+                      </td>
+                      <td><b>{bowlerStats[player]?.wickets}</b></td>
+                      <td>{bowlerStats[player]?.runs}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
-      <div className="score-buttons">
-        <button onClick={() => handleRun(1)}>1 Run</button>
-        <button onClick={() => handleRun(2)}>2 Runs</button>
-        <button onClick={() => handleRun(4)}>4 Runs</button>
-        <button onClick={() => handleRun(6)}>6 Runs</button>
-        <button onClick={handleWicket}>Wicket</button>
-        <button onClick={() => handleExtra("wide")}>Wide</button>
-        <button onClick={() => handleExtra("noBall")}>No Ball</button>
-        <button onClick={() => handleExtra("bye")}>Bye</button>
-        <button onClick={() => handleExtra("legBye")}>Leg Bye</button>
-      </div>
+      {/* Floating Summary */}
+      <div className="glass-panel" style={{ padding: "2rem", position: "sticky", top: "2rem" }}>
+        <h2 className="gradient-text" style={{ fontSize: "1.5rem", marginBottom: "1.5rem", textAlign: "center" }}>Live Score</h2>
+        
+        <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ color: "var(--text-secondary)", fontSize: "1.1rem" }}>Runs</span>
+            <span style={{ fontSize: "4rem", fontWeight: "700", lineHeight: "1" }}>{runs}<span style={{ fontSize: "2rem", color: "#ef4444" }}>/{wickets}</span></span>
+          </div>
+          
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ color: "var(--text-secondary)", fontSize: "1.1rem" }}>Overs</span>
+            <span style={{ fontSize: "1.5rem", fontWeight: "600" }}>{overs}.{balls}</span>
+          </div>
 
-      <div className="score-summary-top-right">
-        <h3>Score Summary</h3>
-        <p>Overs: {overs}.{balls}</p>
-        <p>Runs: {runs}</p>
-        <p>Wickets: {wickets}</p>
-        <p>Striker: {striker}</p>
-        <p>Non-Striker: {nonStriker}</p>
-        <p>Bowler: {bowler}</p>
-        <p>Extras: {`Wide: ${extras.wide}, No Ball: ${extras.noBall}, Bye: ${extras.bye}, Leg Bye: ${extras.legBye}`}</p>
-      </div>
+          <hr style={{ border: "none", borderTop: "1px solid var(--glass-border)", margin: "1rem 0" }} />
+          
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+            <div>
+              <span style={{ color: "var(--text-secondary)", fontSize: "0.8rem", textTransform: "uppercase" }}>Striker</span> 
+              <p style={{ fontWeight: "600", fontSize: "1.1rem" }}>{striker}</p>
+            </div>
+            <div>
+              <span style={{ color: "var(--text-secondary)", fontSize: "0.8rem", textTransform: "uppercase" }}>Non-Striker</span> 
+              <p style={{ fontWeight: "600", fontSize: "1.1rem" }}>{nonStriker}</p>
+            </div>
+            <div style={{ gridColumn: "1 / -1" }}>
+              <span style={{ color: "var(--text-secondary)", fontSize: "0.8rem", textTransform: "uppercase" }}>Current Bowler</span> 
+              <p style={{ fontWeight: "600", fontSize: "1.1rem", color: "var(--accent-blue)" }}>{bowler}</p>
+            </div>
+          </div>
 
-      <div className="scorecard">
-        <h3>Scorecard</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Batsman</th>
-              <th>Runs</th>
-              <th>Balls</th>
-            </tr>
-          </thead>
-          <tbody>
-            {batsmanOptions.map((player) => (
-              <tr key={player}>
-                <td>{player}</td>
-                <td>{batsmanStats[player]?.runs}</td>
-                <td>{batsmanStats[player]?.balls}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+          <hr style={{ border: "none", borderTop: "1px solid var(--glass-border)", margin: "1rem 0" }} />
+          
+          <div>
+             <span style={{ color: "var(--text-secondary)", fontSize: "0.8rem", textTransform: "uppercase" }}>Extras</span>
+             <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginTop: "0.5rem", fontSize: "0.85rem", fontWeight: "600" }}>
+               <span style={{ background: "rgba(255,255,255,0.05)", padding: "4px 10px", borderRadius: "6px" }}>WD: {extras.wide}</span>
+               <span style={{ background: "rgba(255,255,255,0.05)", padding: "4px 10px", borderRadius: "6px" }}>NB: {extras.noBall}</span>
+               <span style={{ background: "rgba(255,255,255,0.05)", padding: "4px 10px", borderRadius: "6px" }}>B: {extras.bye}</span>
+               <span style={{ background: "rgba(255,255,255,0.05)", padding: "4px 10px", borderRadius: "6px" }}>LB: {extras.legBye}</span>
+             </div>
+          </div>
 
-        <h3>Bowler Stats</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Bowler</th>
-              <th>Wickets</th>
-              <th>Runs</th>
-            </tr>
-          </thead>
-          <tbody>
-            {bowlerOptions.map((player) => (
-              <tr key={player}>
-                <td>{player}</td>
-                <td>{bowlerStats[player]?.wickets}</td>
-                <td>{bowlerStats[player]?.runs}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        </div>
       </div>
     </div>
   );
