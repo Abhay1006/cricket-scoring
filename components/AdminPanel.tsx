@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import "../app/admin/admin.css";    
 
 const AdminPanel = () => {
@@ -20,7 +20,7 @@ const AdminPanel = () => {
   const [bowler, setBowler] = useState(bowlerOptions[0]);
 
   const [batsmanStats, setBatsmanStats] = useState(() => {
-    const stats = {};
+    const stats: Record<string, { runs: number; balls: number }> = {};
     batsmanOptions.forEach((player) => {
       stats[player] = { runs: 0, balls: 0 };
     });
@@ -28,7 +28,7 @@ const AdminPanel = () => {
   });
 
   const [bowlerStats, setBowlerStats] = useState(() => {
-    const stats = {};
+    const stats: Record<string, { wickets: number; runs: number }> = {};
     bowlerOptions.forEach((player) => {
       stats[player] = { wickets: 0, runs: 0 };
     });
@@ -103,7 +103,7 @@ const AdminPanel = () => {
     setStriker(newBatsman || striker);
   };
 
-  const handleExtra = (type: string) => {
+  const handleExtra = (type: "wide" | "noBall" | "bye" | "legBye") => {
     setExtras((prev) => ({
       ...prev,
       [type]: (prev[type] || 0) + 1,
