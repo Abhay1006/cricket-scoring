@@ -1,8 +1,6 @@
 # 🏏 Cricket Scoring Pro
 
-A modern, high-performance, real-time cricket scoring dashboard built for desktop and mobile devices. 
-
-![Screenshot_20241120_164150](https://github.com/user-attachments/assets/6a66341f-3300-4adc-be4d-e8375c0c27ed)
+A modern, high-performance, real-time cricket scoring dashboard built for desktop and mobile devices.
 
 ## 🚀 Features
 
